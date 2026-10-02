@@ -39,17 +39,25 @@ class Metrics:
         self.storage.append(sample.to_dict(), "metrics", "workers", f"{worker.worker_id}.jsonl")
 
     def record_task(self, job, task, duration_ms: float) -> None:
-        # Throughput = records processed per second for this task.
+        # Throughput = records processed per second for this task.  Latency is
+        # the worker's execution wall time in real milliseconds, matching the
+        # task ``duration_ms`` shown on the monitoring page exactly.
         secs = max(duration_ms / 1000.0, 1e-6)
         sample = MetricSample(
             ts_ms=now_ms(),
             job_id=job.job_id,
             worker_id=task.worker_id or "",
             records_per_sec=round(task.records_processed / secs, 2),
-            task_latency_ms=round(duration_ms / 1000.0, 1),
+            task_latency_ms=round(float(duration_ms), 1),
             throughput=round(task.records_emitted / secs, 2),
+            tasks_completed=1,
         )
-        self.storage.append(sample.to_dict(), "metrics", "jobs", f"{job.job_id}.jsonl")
+        sample_dict = sample.to_dict()
+        sample_dict["records_processed"] = task.records_processed
+        sample_dict["records_emitted"] = task.records_emitted
+        sample_dict["task_id"] = task.task_id
+        sample_dict["kind"] = task.kind
+        self.storage.append(sample_dict, "metrics", "jobs", f"{job.job_id}.jsonl")
 
     # -- queries ------------------------------------------------------
     def job_samples(self, job_id: str) -> list[dict]:

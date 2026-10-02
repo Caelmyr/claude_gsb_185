@@ -56,6 +56,15 @@ class ClusterConfig:
     reduce_parallelism_factor: float = 2.0
     scheduler_tick_sec: float = 5.0              # master scheduling loop cadence
     metric_interval_sec: float = 2.0             # metric sample cadence
+    # --- slow-task analysis (see backend/master/slow_tasks.py) ---
+    slow_task_ratio: float = 2.0                 # exec >= ratio x same-stage median
+    slow_task_wait_ratio: float = 2.0            # wait >= ratio x job's median queue wait
+    slow_task_min_exec_ms: float = 1000.0        # absolute floor so tiny tasks never qualify
+    slow_task_min_wait_ms: float = 1000.0        # absolute floor on queueing time
+    slow_task_min_group: int = 4                 # min same-(job,kind) samples for a baseline
+    slow_task_cost_ratio: float = 1.5            # ms/record ratio that separates skew from slowness
+    slow_node_min_tasks: int = 3                 # min tasks on a node before it can be "generally slow"
+    slow_node_ratio: float = 1.5                 # node median exec >= ratio x kind baseline median
     demo_mode: bool = False                      # simulate work for fast UI demos
     default_input_rows: int = 12000              # generated input size for sample jobs
     seed: int = 20260930
@@ -84,6 +93,14 @@ class ClusterConfig:
             reduce_parallelism_factor=_num(self.reduce_parallelism_factor, 2.0, 0.5, 50.0),
             scheduler_tick_sec=_num(self.scheduler_tick_sec, 0.5, 0.05, 10.0),
             metric_interval_sec=_num(self.metric_interval_sec, 2.0, 0.5, 60.0),
+            slow_task_ratio=_num(self.slow_task_ratio, 2.0, 1.0, 20.0),
+            slow_task_wait_ratio=_num(self.slow_task_wait_ratio, 2.0, 1.0, 20.0),
+            slow_task_min_exec_ms=_num(self.slow_task_min_exec_ms, 1000.0, 0.0, 3_600_000.0),
+            slow_task_min_wait_ms=_num(self.slow_task_min_wait_ms, 1000.0, 0.0, 3_600_000.0),
+            slow_task_min_group=_int(self.slow_task_min_group, 4, 2, 1000),
+            slow_task_cost_ratio=_num(self.slow_task_cost_ratio, 1.5, 1.0, 10.0),
+            slow_node_min_tasks=_int(self.slow_node_min_tasks, 3, 1, 1000),
+            slow_node_ratio=_num(self.slow_node_ratio, 1.5, 1.0, 20.0),
             demo_mode=_bool(self.demo_mode, False),
             default_input_rows=_int(self.default_input_rows, 12000, 10, 10_000_000),
             seed=_int(self.seed, 20260930, 0, 2 ** 31 - 1),

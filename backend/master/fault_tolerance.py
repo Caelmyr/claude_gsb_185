@@ -78,6 +78,7 @@ class FaultTolerance:
                 status=C.TASK_RETRYING, worker_id=None, error=error,
                 attempts=task.attempts + 1,
                 retry_after_ms=now_ms() + backoff_ms,
+                started_ms=0,
                 progress=0.0, records_processed=0, records_emitted=0,
             )
             return True
@@ -108,6 +109,7 @@ class FaultTolerance:
                         job.job_id, task.task_id,
                         status=C.TASK_RETRYING, worker_id=None,
                         error=f"worker {worker.name} died", retry_after_ms=0,
+                        started_ms=0,
                     )
                     reassigned += 1
         return reassigned

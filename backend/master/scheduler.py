@@ -192,14 +192,19 @@ class Scheduler:
             return
 
         def mark_dispatched(t: Task) -> None:
+            now = now_ms()
             t.status = C.TASK_ASSIGNED
-            t.assigned_ms = now_ms()
+            t.assigned_ms = now
+            # Keep the first dispatch timestamp so queueing time (creation ->
+            # first dispatch) is separable from backoff/retry delay later on.
+            stats = dict(t.stats or {})
+            if not stats.get("first_assigned_ms"):
+                stats["first_assigned_ms"] = now
             if not speculative:
                 t.worker_id = worker.worker_id
             else:
-                stats = dict(t.stats or {})
                 stats.setdefault("speculative_workers", []).append(worker.worker_id)
-                t.stats = stats
+            t.stats = stats
 
         self.job_manager.apply_task(job.job_id, task.task_id, mark_dispatched)
         self.logbus.info(
@@ -274,7 +279,9 @@ class Scheduler:
             t.progress = 1.0
             t.records_processed = int(payload.get("records_processed", 0))
             t.records_emitted = int(payload.get("records_emitted", 0))
-            t.duration_ms = int(payload.get("duration_ms", 0)) * 1000
+            # The worker reports real wall-clock execution milliseconds (its
+            # local start -> finish), independent of any queueing on the Master.
+            t.duration_ms = int(payload.get("duration_ms", 0))
             t.finished_ms = now_ms()
             t.error = ""
             stats = dict(t.stats or {})

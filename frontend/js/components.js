@@ -10,6 +10,7 @@ const Components = (() => {
     { key: 'logs', href: 'logs.html', label: '日志搜索 Logs' },
     { key: 'metrics', href: 'metrics.html', label: '性能指标 Metrics' },
     { key: 'fault', href: 'fault.html', label: '故障恢复 Fault' },
+    { key: 'slow', href: 'slow.html', label: '慢任务分析 Slow Tasks' },
     { key: 'config', href: 'config.html', label: '配置管理 Config' },
     { key: 'results', href: 'results.html', label: '结果导出 Results' },
   ];

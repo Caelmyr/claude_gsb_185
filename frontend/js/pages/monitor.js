@@ -60,7 +60,14 @@ async function render() {
     { key: 'attempts', label: '尝试 Att', render: r => r.attempts, num: true },
     { key: 'progress', label: '进度 Progress', render: r => `<div style="min-width:120px">${C.progress((r.progress||0)*100)}</div>` },
     { key: 'records_processed', label: '处理 Records', render: r => C.fmtNum(r.records_processed), num: true },
-    { key: 'duration_ms', label: '耗时 Dur', render: r => C.fmtDur(r.duration_ms), num: true },
+    { key: 'wait_ms', label: '排队等待 Wait', render: r => {
+        // created -> first dispatch; mirrors the slow-task page decomposition.
+        const first = (r.stats && r.stats.first_assigned_ms) || r.assigned_ms;
+        const w = (first && r.created_ms && first >= r.created_ms) ? first - r.created_ms : null;
+        return w == null ? '<span class="muted">-</span>'
+          : `<span class="tabular${w ? ' muted' : ''}">${C.fmtDur(w)}</span>`;
+      }, num: true },
+    { key: 'duration_ms', label: '执行耗时 Exec', render: r => `<span class="tabular">${C.fmtDur(r.duration_ms)}</span>`, num: true },
   ], filtered) : C.empty();
 }
 

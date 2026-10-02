@@ -335,7 +335,7 @@ class Executor:
             "status": result.get("status", C.TASK_FAILED),
             "records_processed": result.get("records_processed", 0),
             "records_emitted": result.get("records_emitted", 0),
-            "duration_ms": int((now_ms() - handle["started_ms"]) / 1000) if handle else 0,
+            "duration_ms": int(now_ms() - handle["started_ms"]) if handle else 0,
             "partition_sizes": result.get("partition_sizes", {}),
             "results": result.get("results", []),
             "error": result.get("error", ""),

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>慢任务分析 Slow Tasks — 分布式 MapReduce</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header id="app-nav"></header>
+  <main class="page">
+    <h1 class="page-title">慢任务分析 <span>Slow Task Analysis</span></h1>
+    <p class="page-desc">
+      按「作业 + 阶段」自适应基线找出执行偏慢的任务，区分排队等待与实际执行，并横向对比节点。
+      Adaptive per-(job, stage) baselines; queue wait vs. execution split; cross-node comparison.
+    </p>
+
+    <div class="flex between mb wrap">
+      <div class="pill-group" id="scope-filter">
+        <span class="pill" data-scope="job">单作业 Job</span>
+        <span class="pill" data-scope="cluster">多作业横向 Nodes</span>
+      </div>
+      <div class="flex">
+        <div id="job-picker" class="flex" style="min-width:280px"></div>
+        <button class="btn small" id="refresh">刷新 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Criteria explainer -->
+    <div class="card mb">
+      <h2>判定标准 <span class="sub">How "slow" is decided</span></h2>
+      <div id="criteria" class="small muted"></div>
+    </div>
+
+    <!-- Job scope -->
+    <div id="job-view">
+      <div id="job-summary" class="stat-tiles mb"></div>
+      <div id="job-baselines"></div>
+      <div class="card mt">
+        <h2>慢任务清单 <span class="sub">Slow tasks</span></h2>
+        <div id="job-tasks"></div>
+      </div>
+    </div>
+
+    <!-- Cluster scope -->
+    <div id="cluster-view" style="display:none">
+      <div id="cluster-summary" class="stat-tiles mb"></div>
+      <div class="card mt">
+        <h2>节点横向对比 <span class="sub">Per-node across all jobs</span>
+          <span class="sub" style="float:right">指数 = 节点中位耗时 ÷ 各(作业,阶段)基线中位数，1.0 为正常 &nbsp; index = node median / peer median</span>
+        </h2>
+        <div id="cluster-nodes"></div>
+      </div>
+      <div class="card mt">
+        <h2>跨作业慢任务 <span class="sub">Slowest tasks across jobs</span></h2>
+        <div id="cluster-tasks"></div>
+      </div>
+    </div>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/pages/slow.js"></script>
+</body>
+</html>

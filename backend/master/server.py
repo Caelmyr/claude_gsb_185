@@ -27,6 +27,7 @@ from backend.master.metrics import Metrics
 from backend.master.registry import WorkerRegistry
 from backend.master.scheduler import Scheduler
 from backend.master.shuffle import ShuffleCoordinator
+from backend.master.slow_tasks import SlowTaskAnalyzer
 from backend.tasks.registry import list_all as list_functions
 from backend.tasks.samples import list_sample_jobs
 
@@ -50,6 +51,7 @@ class Master:
         self.metrics = Metrics(self.storage)
         self.shuffle = ShuffleCoordinator(self.storage, self.job_manager, self.registry, self.logbus)
         self.fault_tolerance = FaultTolerance(self.storage, self.job_manager, self.config, self.logbus)
+        self.slow_tasks = SlowTaskAnalyzer(self.job_manager, self.registry, self.config)
         self.registry.on_death = self.fault_tolerance.handle_worker_death
         self.scheduler = Scheduler(
             self.storage, self.job_manager, self.registry, self.shuffle,
@@ -86,6 +88,8 @@ class Master:
         app.add_url_rule("/api/jobs/<job_id>/logs", "job_logs", self._job_logs, methods=["GET"])
         app.add_url_rule("/api/jobs/<job_id>/metrics", "job_metrics", self._job_metrics, methods=["GET"])
         app.add_url_rule("/api/jobs/<job_id>/faults", "job_faults", self._job_faults, methods=["GET"])
+        app.add_url_rule("/api/jobs/<job_id>/slow-tasks", "job_slow_tasks", self._job_slow_tasks, methods=["GET"])
+        app.add_url_rule("/api/slow-tasks", "slow_tasks", self._slow_tasks, methods=["GET"])
         app.add_url_rule("/api/jobs/<job_id>/results", "job_results", self._job_results, methods=["GET"])
         app.add_url_rule("/api/jobs/<job_id>/results/download", "job_results_download",
                          self._job_results_download, methods=["GET"])
@@ -250,7 +254,6 @@ class Master:
         if job is None:
             return err, code
         data = self.metrics.job_metrics(job_id)
-        data["avg_latency_ms"] = round(data["avg_latency_ms"] / 1000.0, 3)
         return jsonify(data)
 
     def _job_faults(self, job_id: str):
@@ -260,6 +263,16 @@ class Master:
         faults = self.fault_tolerance.list_faults(job_id)
         faults.reverse()
         return jsonify({"job_id": job_id, "faults": faults})
+
+    def _job_slow_tasks(self, job_id: str):
+        job, err, code = self._get_job(job_id)
+        if job is None:
+            return err, code
+        return jsonify(self.slow_tasks.analyze_job(job))
+
+    def _slow_tasks(self):
+        limit = max(1, min(int(request.args.get("limit", 200)), 1000))
+        return jsonify(self.slow_tasks.analyze_cluster(limit=limit))
 
     def _job_results(self, job_id: str):
         job, err, code = self._get_job(job_id)
