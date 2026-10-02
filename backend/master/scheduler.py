@@ -113,7 +113,12 @@ class Scheduler:
         elif status == C.JOB_SHUFFLE:
             started = job.stats.get("shuffle_started_ms", 0)
             if now_ms() - started >= SHUFFLE_HOLD_MS:
-                self.job_manager.set_job_status(job, C.JOB_REDUCE)
+                # Stamp when reduce tasks became runnable so queue-wait
+                # analysis does not count the map+shuffle phase as waiting.
+                self.job_manager.apply_job(job.job_id, lambda j: (
+                    setattr(j, "status", C.JOB_REDUCE),
+                    j.stats.__setitem__("reduce_started_ms", now_ms()),
+                ))
                 self.logbus.info(job.job_id, "shuffle complete; reduce stage started",
                                  task_id="shuffle")
         elif status == C.JOB_REDUCE:

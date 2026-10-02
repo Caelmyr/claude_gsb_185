@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>慢任务分析 Slow Tasks — 分布式 MapReduce</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header id="app-nav"></header>
+  <main class="page">
+    <h1 class="page-title">慢任务分析 <span>Slow Task Analysis</span></h1>
+    <p class="page-desc">按「作业 × 阶段」的中位数基线判定执行明显偏慢的任务，排队等待与实际执行分开统计（执行耗时与监控页口径一致），并跨作业对比各节点。Slow tasks judged against per job×stage median baselines; queue wait and execution are reported separately (execution matches the monitor page), with a cross-job node comparison.</p>
+
+    <div class="flex between mb">
+      <div id="job-picker" class="flex" style="min-width:280px"></div>
+      <button class="btn small" id="refresh">刷新 Refresh</button>
+    </div>
+
+    <div id="job-summary"></div>
+
+    <div class="card mt">
+      <h2>慢任务 <span class="sub">Slow tasks — execution</span></h2>
+      <div id="slow-tasks"></div>
+    </div>
+
+    <div class="card mt">
+      <h2>等待异常 <span class="sub">Long queue wait — execution normal</span></h2>
+      <div id="wait-outliers"></div>
+    </div>
+
+    <div class="card mt">
+      <h2>节点横向对比 <span class="sub">Cross-job node view</span></h2>
+      <div id="cluster-summary"></div>
+      <div id="cluster"></div>
+    </div>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/pages/slow.js"></script>
+</body>
+</html>

@@ -4,6 +4,7 @@ const Components = (() => {
     { key: 'home', href: 'index.html', label: '总览 Overview' },
     { key: 'submit', href: 'submit.html', label: '作业提交 Submit' },
     { key: 'monitor', href: 'monitor.html', label: '作业监控 Monitor' },
+    { key: 'slow', href: 'slow.html', label: '慢任务分析 Slow' },
     { key: 'nodes', href: 'nodes.html', label: '节点管理 Nodes' },
     { key: 'shards', href: 'shards.html', label: '分片管理 Shards' },
     { key: 'shuffle', href: 'shuffle.html', label: 'Shuffle 排序' },
